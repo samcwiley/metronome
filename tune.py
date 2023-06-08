@@ -98,7 +98,8 @@ class Part:
             case "2/4 March":
                 beats_per_measure = 2
                 bars_per_part = 8
-                repeats = True
+                #repeats = True
+                repeats = False
                 beat_pattern = [0, 1]
             case "4/4 March":
                 beats_per_measure = 4
@@ -139,6 +140,9 @@ class Part:
             for beat in beat_pattern:
                 beats.append([beat, 60/self.tempo])
             self.bars.append(beats)
+            if repeats:
+                self.bars.append(beats)
+
 
     def toString(self):
         print(self.tune_name, self.part_number, self.bars)
