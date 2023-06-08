@@ -176,7 +176,6 @@ class Part:
         for bar in self.bars[start_bar:end_bar]:
             total_beats = total_beats + len(bar)
         beat_durations = np.linspace(60/start_tempo, 60/end_tempo, num=total_beats).tolist()
-        print(beat_durations)
         for bar in self.bars[start_bar:end_bar]:
             for beat in bar:
                 beat[1] = beat_durations.pop(0)

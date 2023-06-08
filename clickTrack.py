@@ -13,11 +13,12 @@ reel3 = Tune("Hurlock's Reel", "Reel", 80, 2, False)
 closer = Tune("Simple Gifts Reprise", "Reel", 80, 1, False)
 #turn them bitches into a medley
 tune_list = [opener, strath1, strath2, jig1, jig2, air, reel1, reel2, reel3, closer]
-medley = Medley("1-Simple Gifts", tune_list, True)
+medley = Medley("2024_APB", tune_list, True)
 #adding two beats to bars 2, 4, 6, 8 to make part 1 of the air mixed meter
 for bar_number in [1, 3, 5, 7]:
     for _ in range(2):
         air.parts[0].bars[bar_number].append([1, 60/air.tempo])
+air.parts[0].bars[0].insert(0, [1, 60/air.tempo])
 reel1.parts[0].add_off_beats(0, 2, 2)
 reel1.parts[0].accelerando(0, 2, air.tempo, 2*reel1.tempo)
 reel1.parts[0].bars[5].append([1, 60/reel1.tempo])
