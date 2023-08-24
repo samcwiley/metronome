@@ -131,6 +131,11 @@ class Part:
                 bars_per_part = 8
                 repeats = False
                 beat_pattern = [0, 1, 1, 1]
+            case "6/4 Slow March":
+                beats_per_measure = 6
+                bars_per_part = 8
+                repeats = False
+                beat_pattern = [0, 1, 1, 0, 1, 1]
 
         for bar in range(bars_per_part):
             beats = []
