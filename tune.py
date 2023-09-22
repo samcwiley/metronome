@@ -3,14 +3,14 @@ from pydub.generators import Sine
 from pydub.utils import make_chunks
 import numpy as np
 
-strong_beat = 'strong_beat.wav'
-weak_beat = 'weak_beat.wav'
-break_beat = 'cymbal.wav'
-off_beat = 'off_beat.wav'
-strong = AudioSegment.from_file(strong_beat)
+strong_beat = "strong_beat.wav"
+weak_beat = "weak_beat.wav"
+break_beat = "cymbal.wav"
+off_beat = "off_beat.wav"
+"""strong = AudioSegment.from_file(strong_beat)
 weak = AudioSegment.from_file(weak_beat)
 break_beat = AudioSegment.from_file(break_beat)
-off_beat = AudioSegment.from_file(off_beat)
+off_beat = AudioSegment.from_file(off_beat)"""
 
 
 class Medley:
@@ -22,24 +22,24 @@ class Medley:
             rolls = Tune("Rolls", "Rolls", self.tunes[0].tempo, 1, False)
             self.tunes.insert(0, rolls)
 
-
     def add_break(self, first_tune_index, num_Beats, start_Beat):
-        self.tunes[first_tune_index].parts[-1].bars[-1] = self.tunes[first_tune_index].parts[-1].bars[-1][0:-start_Beat]
-        tempo = self.tunes[first_tune_index+1].tempo
-        for i in range (num_Beats):
-            self.tunes[first_tune_index].parts[-1].bars[-1].append([2, 60/tempo])
-        
+        self.tunes[first_tune_index].parts[-1].bars[-1] = (
+            self.tunes[first_tune_index].parts[-1].bars[-1][0:-start_Beat]
+        )
+        tempo = self.tunes[first_tune_index + 1].tempo
+        for i in range(num_Beats):
+            self.tunes[first_tune_index].parts[-1].bars[-1].append([2, 60 / tempo])
 
     def toString(self):
         print(f"{self.title} Medley. Rolls start at {self.rolls}. The tunes are: ")
         for tune in self.tunes:
-            print(f"{tune.title}, a {tune.numParts}-parted {tune.tune_type} at {tune.tempo} BPM.")
+            print(
+                f"{tune.title}, a {tune.num_parts}-parted {tune.tune_type} at {tune.tempo} BPM."
+            )
 
     def make_mp3(self):
         result = AudioSegment.silent(duration=0)
         output_file = f"{self.title.replace(' ', '')}_medley_click_track.mp3"
-        
-
 
         for tune in self.tunes:
             print(f"Adding {tune.title} at time {result.duration_seconds}")
@@ -48,30 +48,80 @@ class Medley:
 
 
 class Tune:
-    def __init__(self, title, tune_type, tempo, numParts, transition):
+    def __init__(self, title, tune_type, tempo, num_parts):  # , transition):
         self.title = title
         self.tune_type = tune_type
         self.tempo = tempo
-        self.numParts = numParts
-        self.transition = transition
+        self.num_parts = num_parts
+        # self.transition = transition
+        if tune_type == "Rolls":
+            self.beats_per_measure = 4
+            self.bars_per_part = 2
+            self.repeats = False
+        elif tune_type == "2/4 March":
+            self.beats_per_measure = 2
+            self.bars_per_part = 8
+            self.repeats = True
+        elif tune_type == "4/4 March":
+            self.beats_per_measure = 4
+            self.bars_per_part = 8
+            self.repeats = False
+        elif tune_type == "Strathspey":
+            self.beats_per_measure = 4
+            self.bars_per_part = 8
+            self.repeats = False
+        elif tune_type == "Reel":
+            self.beats_per_measure = 2
+            self.bars_per_part = 8
+            self.repeats = False
+        elif tune_type == "6/8 Jig":
+            self.beats_per_measure = 2
+            self.bars_per_part = 8
+            self.repeats = True
+        elif tune_type == "12/8 Jig":
+            self.beats_per_measure = 4
+            self.bars_per_part = 8
+            self.repeats = False
+        elif tune_type == "4/4 Slow March":
+            self.beats_per_measure = 4
+            self.bars_per_part = 8
+            self.repeats = False
+        elif tune_type == "6/4 Slow March":
+            self.beats_per_measure = 6
+            self.bars_per_part = 8
+            self.repeats = False
+
+        self.num_beats = (
+            self.num_parts
+            * self.bars_per_part
+            * self.beats_per_measure
+            * (int(self.repeats) + 1)
+        )
+        self.duration = self.num_beats / self.tempo
+        # TO-DO: make part inherit attributes from tune
+        # TO-DO: make num_beats and duration update when changes are made???
 
         self.parts = []
 
-        for part_number in range(self.numParts):
-            self.parts.append(Part(self.title, self.tune_type, part_number + 1, self.tempo))
-    
+        """for part_number in range(self.num_parts):
+            self.parts.append(
+                Part(self.title, self.tune_type, part_number + 1, self.tempo)
+            )"""
+
     def toString(self, listParts=False):
-        print(f"{self.title}, a {self.numParts}-parted {self.tune_type} at {self.tempo} BPM.")
+        print(
+            f"{self.title}, a {self.num_parts}-parted {self.tune_type} at {self.tempo} BPM."
+        )
         if listParts:
             print("It contains parts:")
             for part in self.parts:
                 print(f"{part.part_number}:")
                 for bar in part.bars:
                     print(bar)
-    
+
     def make_mp3(self):
         result = AudioSegment.silent(duration=0)
-        output_file = 'clickTrack.mp3'
+        output_file = "clickTrack.mp3"
         result = self.add_tune(result)
         result.export(output_file, format="mp3")
 
@@ -89,70 +139,66 @@ class Part:
         self.tempo = tempo
         self.bars = []
 
-        match tune_type:
-            case "Rolls":
-                beats_per_measure = 4
-                bars_per_part = 2
-                repeats = False
-                beat_pattern = [2, 2, 2, 4]
-            case "2/4 March":
-                beats_per_measure = 2
-                bars_per_part = 8
-                #repeats = True
-                repeats = False
-                beat_pattern = [0, 1]
-            case "4/4 March":
-                beats_per_measure = 4
-                bars_per_part = 8
-                repeats = False
-                beat_pattern = [0, 1, 1, 1]
-            case "Strathspey":
-                beats_per_measure = 4
-                bars_per_part = 8
-                repeats = False
-                beat_pattern = [0, 1, 1, 1]
-            case "Reel":
-                beats_per_measure = 2
-                bars_per_part = 8
-                repeats = False
-                beat_pattern = [0, 1]
-            case "6/8 Jig":
-                beats_per_measure = 2
-                bars_per_part = 8
-                repeats = True
-                beat_pattern = [0, 1]
-            case "12/8 Jig":
-                beats_per_measure = 4
-                bars_per_part = 8
-                repeats = False
-                beat_pattern = [0, 1, 1, 1]
-            case "4/4 Slow March":
-                beats_per_measure = 4
-                bars_per_part = 8
-                repeats = False
-                beat_pattern = [0, 1, 1, 1]
-            case "6/4 Slow March":
-                beats_per_measure = 6
-                bars_per_part = 8
-                repeats = False
-                beat_pattern = [0, 1, 1, 0, 1, 1]
+        if tune_type == "Rolls":
+            beats_per_measure = 4
+            bars_per_part = 2
+            repeats = False
+            beat_pattern = [2, 2, 2, 4]
+        elif tune_type == "2/4 March":
+            beats_per_measure = 2
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1]
+        elif tune_type == "4/4 March":
+            beats_per_measure = 4
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1, 1, 1]
+        elif tune_type == "Strathspey":
+            beats_per_measure = 4
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1, 1, 1]
+        elif tune_type == "Reel":
+            beats_per_measure = 2
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1]
+        elif tune_type == "6/8 Jig":
+            beats_per_measure = 2
+            bars_per_part = 8
+            repeats = True
+            beat_pattern = [0, 1]
+        elif tune_type == "12/8 Jig":
+            beats_per_measure = 4
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1, 1, 1]
+        elif tune_type == "4/4 Slow March":
+            beats_per_measure = 4
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1, 1, 1]
+        elif tune_type == "6/4 Slow March":
+            beats_per_measure = 6
+            bars_per_part = 8
+            repeats = False
+            beat_pattern = [0, 1, 1, 0, 1, 1]
 
         for bar in range(bars_per_part):
             beats = []
-            #beats.append([0, 60/self.tempo])
-            #for beat in range(1, beats_per_measure):
+            # beats.append([0, 60/self.tempo])
+            # for beat in range(1, beats_per_measure):
             #    beats.append([1, 60/self.tempo])
             for beat in beat_pattern:
-                beats.append([beat, 60/self.tempo])
+                beats.append([beat, 60 / self.tempo])
             self.bars.append(beats)
             if repeats:
                 self.bars.append(beats)
 
-
     def toString(self):
         print(self.tune_name, self.part_number, self.bars)
 
-    
     def addPart(self, track):
         for bar in self.bars:
             for beat in bar:
@@ -175,18 +221,20 @@ class Part:
                     silence = AudioSegment.silent(duration=silence_duration)
                     track += silence
         return track
-    
+
     def accelerando(self, start_bar, end_bar, start_tempo, end_tempo):
         total_beats = 0
         for bar in self.bars[start_bar:end_bar]:
             total_beats = total_beats + len(bar)
-        beat_durations = np.linspace(60/start_tempo, 60/end_tempo, num=total_beats).tolist()
+        beat_durations = np.linspace(
+            60 / start_tempo, 60 / end_tempo, num=total_beats
+        ).tolist()
         for bar in self.bars[start_bar:end_bar]:
             for beat in bar:
                 beat[1] = beat_durations.pop(0)
 
     def add_off_beats(self, start_bar, end_bar, meter):
-        for bar in self.bars[start_bar:end_bar]: 
+        for bar in self.bars[start_bar:end_bar]:
             updated_bar = []
             for beat in bar:
                 beat_type = beat[0]
